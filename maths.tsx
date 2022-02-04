@@ -72,23 +72,6 @@ export default class Maths {
 	ln(x: number) : number {
 		return Math.log(x);
 	}
-	/*factorial(x: string) : number {
-		alert(x);
-		x = x.replace(/maths/g, 'this');
-		try {
-			x = parseFloat(eval(x));
-		} catch(err) {
-			return 'Syntax Error';
-		}
-		if (x > 170 || !Number.isInteger(x)) return 'undefined';
-		else if (x == 0 || x == 1) return 1;
-		let isNegative: number = 1;
-		if (x < 0) isNegative = -1;
-		for (let i = x - 1; i > 1; i--) {
-			x *= i;
-		}
-		return x * isNegative;
-	}*/
 	RandInt(min, max) {
 		return Math.round(Math.random() * (max - min) + min);
 	}

@@ -110,26 +110,6 @@ export default class Misc {
 			'e','.','E',
 		];
 		eq = eq.replace(/!/g, '["factorial"]()')
-		/*while (eq.includes('!')) {
-			eq = eq.replace(/\*!/g, '!')
-			let len = eq.length;
-			for (let i = 0; i < len; i++) {
-				if (eq[i] == '!') {
-					nums = '';
-					for (let x = 1; x <= i; x++) {
-						if ((this.opers.includes(eq[i - x]) || eq[i - x] == '-') &&
-						!allow.includes(eq[i - x]))
-						{
-							break;
-						}
-						nums += eq[i - x];
-					}
-					nums = this.reverseString(nums);
-					eq = eq.replace(nums + '!', `${maths.factorial(nums)} *`)
-					break;
-				}
-			}
-		}*/
 		if (eq.includes('|')) {eq = this.fixAbsolute(eq)}
 		if (eq.slice(-1) == '*') eq = eq.slice(0, -1);
 		//alert(eq); //For debugging 
@@ -181,20 +161,37 @@ export default class Misc {
 		}
 		if (eq.slice(-1) == '*') eq = eq.slice(0, -1)
 		if (eq.slice(-2) == '* ') eq = eq.slice(0, -2)
-		eq = eq.replace(/\* \*\*\*/g, '**')
-		.replace(/\* \*\*/, '**')
-		.replace(/\(\* /g, '(')
-		.replace(/\* \/\*/g, '/')
-		.replace(/\) \* \* \(/g, ') * (')
-		.replace(/\* \+/g, '+')
-		.replace(/\* -\(/g, '-(')
-		.replace(/\* !/g, '!')
-		.replace(/\* \//g, '/')
-		.replace(/\* \)/g, ')')
-		.replace(/\*\*\*/g, '**')
-		.replace(/\)\* \* \(/g, ') * (')
-		
-		.replace(/\* \* \(/g, '* (');
+		//eq = eq.replace(/\* \*\*\*/g, '**')
+		//.replace(/\* \*\*/, '**')
+		//.replace(/\(\* /g, '(')
+		//.replace(/\* \/\*/g, '/')
+		//.replace(/\) \* \* \(/g, ') * (')
+		//.replace(/\* \+/g, '+')
+		//.replace(/\* -\(/g, '-(')
+		//.replace(/\* !/g, '!')
+		//.replace(/\* \//g, '/')
+		//.replace(/\* \)/g, ')')
+		//.replace(/\*\*\*/g, '**')
+		//.replace(/\)\* \* \(/g, ') * (')
+		//.replace(/\* \* \(/g, '* (');
+		const toReplace = {
+			'* **': '**',
+			'(*': '(',
+			'* /*': '/',
+			') * * (': ') * (',
+			'* +': '+',
+			'* -(': '-(',
+			'* /': '/',
+			'* )': ')',
+			'***': '**',
+			')* * (': ') * (',
+			'* * (': '* ('
+		};
+		for (let value in toReplace) {
+			if (!toReplace.hasOwnProperty(value)) continue;
+			var re = new RegExp(this.escapeRegExp(value), 'g');
+			eq = eq.replace(re, toReplace[value]);
+		}
 		return eq;
 	}
 	fixDecimal(eq: string) : string {
