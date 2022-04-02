@@ -161,19 +161,6 @@ export default class Misc {
 		}
 		if (eq.slice(-1) == '*') eq = eq.slice(0, -1)
 		if (eq.slice(-2) == '* ') eq = eq.slice(0, -2)
-		//eq = eq.replace(/\* \*\*\*/g, '**')
-		//.replace(/\* \*\*/, '**')
-		//.replace(/\(\* /g, '(')
-		//.replace(/\* \/\*/g, '/')
-		//.replace(/\) \* \* \(/g, ') * (')
-		//.replace(/\* \+/g, '+')
-		//.replace(/\* -\(/g, '-(')
-		//.replace(/\* !/g, '!')
-		//.replace(/\* \//g, '/')
-		//.replace(/\* \)/g, ')')
-		//.replace(/\*\*\*/g, '**')
-		//.replace(/\)\* \* \(/g, ') * (')
-		//.replace(/\* \* \(/g, '* (');
 		const toReplace = {
 			'* **': '**',
 			'(*': '(',
@@ -185,7 +172,8 @@ export default class Misc {
 			'* )': ')',
 			'***': '**',
 			')* * (': ') * (',
-			'* * (': '* ('
+			'* * (': '* (',
+			' * * ': '*'
 		};
 		for (let value in toReplace) {
 			if (!toReplace.hasOwnProperty(value)) continue;
@@ -198,7 +186,7 @@ export default class Misc {
 		if (eq.includes('e')) {
 			let firstHalf: any = eq.split('e')[0];
 			let secondHalf: string = eq.split('e')[1];
-			firstHalf = parseFloat(firstHalf).toFixed(13);
+			firstHalf = parseFloat(firstHalf).toFixed(12);
 			firstHalf = this.truncateDecimal(firstHalf);
 			return `${firstHalf}E${secondHalf}`
 		} else {

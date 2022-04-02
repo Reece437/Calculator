@@ -206,6 +206,7 @@ export default class App extends Component {
 			return;
 		}
 		try {
+			console.log(eq);
 			eq = eval(eq).toString();
 			if (eq == 'undefined') {
 				this.setState({answer: eq});
