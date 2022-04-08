@@ -8,17 +8,21 @@ import {
 	Dimensions,
 	ScrollView,
 } from 'react-native';
+import { evaluate, create, all, sqrt, log } from 'mathjs'
 import {StatusBar} from 'expo-status-bar';
 import Misc from './misc.ts';
 import { LinearGradient } from 'expo-linear-gradient';
 import {stylePortrait, styleLandscape} from './styles.tsx';
 import * as Haptics from 'expo-haptics';
-import Maths from './maths.tsx';
+import Maths, {math} from './maths.tsx';
+
 
 const misc = new Misc();
 let trigMode = 'Deg';
 let maths = new Maths(trigMode)
 let styles = stylePortrait;
+
+
 
 export default class App extends Component {
 	constructor(props) {
@@ -42,7 +46,7 @@ export default class App extends Component {
 				'log', 'ln',
 				'sin', 'cos',
 				'tan', '√',
-				'%'
+				'%', 'e'
 			],
 			errorNames: [
 				'undefined',
@@ -155,6 +159,12 @@ export default class App extends Component {
 				case '%':
 					array[i] = 'MOD';
 					break;
+				case 'e':
+					array[i] = 'i';
+					break
+				case 'i': 
+					array[i] = 'e';
+					break;
 				default:
 					array[i] = '%';
 					break;
@@ -163,8 +173,9 @@ export default class App extends Component {
 		this.setState({inner: array});
 	}
 	radOrDeg() : void {
-		trigMode = trigMode == 'Deg' ? 'Rad' : 'Deg';
-		maths = new Maths(trigMode)
+		if (math.trigMode == 'Deg') {
+			math.trigMode = 'Rad';
+		} else math.trigMode = 'Deg'
 		this.compute(this.state.current);
 	}
 	AC() : void {
@@ -186,7 +197,7 @@ export default class App extends Component {
 	}
 	ans(eq: string) : void {
 		eq = eq.replace(/,/g, '');
-		eq = parseFloat(eq);
+		eq = evaluate(eq);
 		this.setState({ANS: eq});
 		let array: string[] = this.state.ansArr;
 		array.push(eq);
@@ -197,29 +208,31 @@ export default class App extends Component {
 		if (this.state.opers.includes(eq.slice(-1))) {
 			eq = eq.slice(0, -1);
 		}
+		eq = misc.change(eq);
+		eq = eq.replace(/ANS/g, `( ${this.state.ANS} )`);
 		while (eq.split('(').length > eq.split(')').length) {
 			eq += ')';
 		}
-		eq = misc.change(eq);
 		if (eq == 'undefined') {
 			this.setState({answer: ''});
 			return;
 		}
 		try {
-			console.log(eq);
-			eq = eval(eq).toString();
+			eq = math.evaluate(eq);
 			if (eq == 'undefined') {
 				this.setState({answer: eq});
 				this.setState({current: misc.comNums(current)});
 				return;
 			}
-			eq = (Number(eq).toPrecision()).toString();
-			if (eq.includes('.')) {
+			//eq = (Number(eq).toPrecision()).toString();
+			
+			if (typeof(eq) == 'object' || (eq.toString()).includes('.')) {
 				eq = misc.fixDecimal(eq);
 			}
+			eq = eq.toString();
 			if (eq == 'NaN' || eq.includes('function')) {
 				this.setState({answer: ''});
-				this.setState({current: this.comNums(current)});
+				this.setState({current: misc.comNums(current)});
 			} else {
 				this.setState({answer: misc.com(eq)
 				.replace('e+', 'E+')
@@ -227,7 +240,9 @@ export default class App extends Component {
 				this.setState({current: misc.comNums(current)});
 			}
 		} catch(err) {
+			console.log(err.message)
 			//alert(err.message) // for debugging
+			console.log(eq);
 			this.setState({answer: ''})
 		}
 	}
@@ -279,7 +294,7 @@ export default class App extends Component {
     				Platform.OS != 'web' ? Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) : null
     				this.radOrDeg()
     				}}>
-    					<Text style={styles.text}>{trigMode}</Text>
+    					<Text style={styles.text}>{math.trigMode}</Text>
     				</TouchableOpacity>
     			</Text> : null}
     			<TouchableOpacity style={styles.span2} onPress={() => {
@@ -304,7 +319,7 @@ export default class App extends Component {
     			{this.touch(styles.small, styles.textSmall, 'cos', 'cos(')}
     			{this.touch(styles.small, styles.textSmall, 'tan', 'tan(')}
     			{this.touch(styles.small, styles.textSmall, '10^', '10^')}
-    			{this.touch(styles.small, styles.textSmall, 'e^', 'e^')}
+    			{this.touch(styles.small, styles.textSmall, 'e^', 'e^(')}
     			{this.touch(styles.small, styles.textSmall, 'sin⁻¹', 'sin⁻¹(')}
     			{this.touch(styles.small, styles.textSmall, 'cos⁻¹', 'cos⁻¹(')}
     			{this.touch(styles.small, styles.textSmall, 'tan⁻¹', 'tan⁻¹(')}
@@ -340,7 +355,7 @@ export default class App extends Component {
 				{this.touch(styles.small, styles.textSmall, 'π', 'π')}
 				{this.touch(styles.small, styles.textSmall, '!', '!')}
 				{this.touch(styles.small, styles.textSmall, '|', '|')}
-				{this.touch(styles.small, styles.textSmall, '^3', '^3')}
+				{this.touch(styles.small, styles.textSmall, 'i', 'i')}
 				{this.touch(styles.small, styles.textSmall, '%', '%')}
 				{this.touch(styles.small, styles.textSmall, 'MOD', 'MOD')}
 				{this.touch(styles.small, styles.textSmall, '^-1', '^-1')}
@@ -374,7 +389,7 @@ export default class App extends Component {
     			{this.touch(styles.small, styles.textSmall, this.state.inner[0], 
     			this.state.inner[0] == 'log' ? 'log(' : '10^')}
     			{this.touch(styles.small, styles.textSmall, this.state.inner[1], 
-    			this.state.inner[1] == 'ln' ? 'ln(' : 'e^')}
+    			this.state.inner[1] == 'ln' ? 'ln(' : 'e^(')}
     			{this.touch(styles.small, styles.textSmall, this.state.inner[2], 
     			this.state.inner[2] + '(')}
     			{this.touch(styles.small, styles.textSmall, this.state.inner[3], 
@@ -387,7 +402,7 @@ export default class App extends Component {
 			{this.state.render && this.state.orientation != 'landscape' ? <View style={styles.row}>
 				{this.touch([styles.small, { borderBottomLeftRadius: 10}], styles.textSmall, '^', '^')}
 				{this.touch(styles.small, styles.textSmall, 'π', 'π')}
-				{this.touch(styles.small, styles.textSmall, 'e', 'e')}
+				{this.touch(styles.small, styles.textSmall, this.state.inner[7], this.state.inner[7])}
     			{this.touch(styles.small, styles.textSmall, '!', '!')}
     			{this.touch(styles.small, styles.textSmall, this.state.inner[6], 
     			this.state.inner[6] == '%' ? '%' : 'MOD')}
@@ -397,7 +412,7 @@ export default class App extends Component {
     			this.radOrDeg()
     			Platform.OS != 'web' ? Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light) : null;
     			}}>
-    				<Text style={styles.textSmall}>{trigMode}</Text>
+    				<Text style={styles.textSmall}>{math.trigMode}</Text>
     			</TouchableOpacity>
     			<TouchableOpacity style={[styles.small, {borderBottomRightRadius: 10}]}
 				onPress={() => {

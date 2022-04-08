@@ -1,37 +1,34 @@
 import Maths from './maths.tsx';
 let maths = new Maths();
-Number.prototype.factorial = function() {
-    return this > 0 ? this * (this-1).factorial() : 1;
-}
 export default class Misc {
 	constructor() {
 		this.map = {
 			'--': '+',
 			'++': '+',
-			'sin(': '* maths.sin(',
-			'cos(': '* maths.cos(',
-			'tan(': '* maths.tan(',
-			'sin⁻¹(': '* maths.sinInv(',
-			'cos⁻¹(': '* maths.cosInv(',
-			'tan⁻¹(': '* maths.tanInv(',
-			'sinh(': '* maths.sinh(',
-			'RandInt(': '* maths.RandInt(',
-			'RandFloat(': '* maths.RandFloat(',
-			'cosh(': '* maths.cosh(',
-			'tanh(': '* maths.tanh(',
-			'sinh⁻¹(': '* maths.sinhInv(',
-			'cosh⁻¹(': '* maths.coshInv(',
-			'tanh⁻¹(': '* maths.tanhInv(',
+			'sin(': '( sInN(',
+			'cos(': '( cosN(',
+			'tan(': '( tanN(',
+			'sin⁻¹(': '( sInInv(',
+			'cos⁻¹(': '( cosInv(',
+			'tan⁻¹(': '( tanInv(',
+			'sinh(': '( sInh(',
+			'RandInt(': '( maths.RandInt(',
+			'RandFloat(': '( maths.RandFloat(',
+			'cosh(': '( cosh(',
+			'tanh(': '( tanh(',
+			'sinh⁻¹(': '( asInh(',
+			'cosh⁻¹(': '( acosh(',
+			'tanh⁻¹(': '( atanh(',
 			'÷': '/',
-			'log(': '* maths.log(',
-			'ln': '* maths.ln',
-			'√': '* Math.sqrt',
-			'×': '* ',
-			'e': '* Math.E * ',
-			'π': '* Math.PI * ',
+			'log(': '( logTEN(',
+			'ln': '( ln',
+			'√': '( sqrt',
+			'×': '(',
+			'e': '( E )',
+			'π': '( PI )',
 			"'": '',
 			'%': '/100 *',
-			'ANS': '* this.state.ANS * '	
+			//'ANS': '( this.state.ANS )'	
 		}
 		this.opers = [
 			'+','×', 
@@ -53,6 +50,7 @@ export default class Misc {
 			var re = new RegExp(this.escapeRegExp(value), 'g');
 			New = New.replace(re, this.map[value]);
 		}
+		New = New.replace(/i/g, '( i )');
 		return New;
 	}
 	escapeRegExp(stringToGoIntoTheRegex) {
@@ -109,7 +107,7 @@ export default class Misc {
 		const allow = [
 			'e','.','E',
 		];
-		eq = eq.replace(/!/g, '["factorial"]()')
+		//eq = eq.replace(/!/g, '["factorial"]()')
 		if (eq.includes('|')) {eq = this.fixAbsolute(eq)}
 		if (eq.slice(-1) == '*') eq = eq.slice(0, -1);
 		//alert(eq); //For debugging 
@@ -125,44 +123,27 @@ export default class Misc {
 						New += eq[i + j]
 					} else break
 				}
-				eq = eq.replace(`|${New}|`, `Math.abs(${New})`);
+				eq = eq.replace(`|${New}|`, `abs(${New})`);
 				len = eq.length;
 			}
 		}
 		return eq;
 	}
 	fixMultiplicationErrors(eq: string) : string {
-		eq = eq.replace(/\^/g, '**');
-		for (let i = 0; i < eq.length; i++) {
-			if (eq[i] == '*') {
-				if ((this.opers.includes(eq[i - 1]) || 
-				eq[i - 1] == '-') &&
-				(eq[i - 1]) != '*' || i == 0) {
-					eq = eq.slice(0, i) + eq.slice(i + 1);
-				} else if (((this.opers.includes(eq[i + 1]) ||
-				eq[i + 1] == '-') &&
-				eq[i + 1] != '(') &&
-				(eq[i + 1] != '*') &&
-				eq[i - 1] != '*') {
-					eq = eq.slice(0, i) + eq.slice(i + 1);
-				}
-			} else if (eq[i] == '(') {
-				if (!isNaN(eq[i - 1])) {
-					eq = eq.slice(0, i) + '* (' + eq.slice(i + 1)
-					i += 3;
-				}
-			} else if (eq[i] == ')') {
-				if (!isNaN(eq[i - 1]) &&
-				eq[i + 1] != '*') {
-					eq = eq.slice(0, i) + ') * ' + eq.slice(i + 1)
-					i += 3;
-				}
+		console.log('rlly before ' + eq)
+		//eq = eq.replace(/\^/g, '**');
+		/*for (let i = 0; i < eq.length; i++) {
+			if (eq[i] == '(' && !isNaN(eq[i -1]) && i != 0) {
+				eq = eq.slice(0, i) + '*' + eq.slice(i )
 			}
-		}
+		}*/
+		console.log('after: ' + eq);
 		if (eq.slice(-1) == '*') eq = eq.slice(0, -1)
 		if (eq.slice(-2) == '* ') eq = eq.slice(0, -2)
 		const toReplace = {
-			'* **': '**',
+			'* ^': '^',
+			'**': '*',
+			') ** (': ') * (',
 			'(*': '(',
 			'* /*': '/',
 			') * * (': ') * (',
@@ -170,23 +151,37 @@ export default class Misc {
 			'* -(': '-(',
 			'* /': '/',
 			'* )': ')',
-			'***': '**',
+			'*^': '^',
+			'^*': '^',
 			')* * (': ') * (',
 			'* * (': '* (',
-			' * * ': '*'
+			' * * ': '*',
+			'* -': '-',
+			'*)': ')',
+			'-*': '-'
 		};
 		for (let value in toReplace) {
 			if (!toReplace.hasOwnProperty(value)) continue;
 			var re = new RegExp(this.escapeRegExp(value), 'g');
 			eq = eq.replace(re, toReplace[value]);
 		}
+		if (eq[0] == '*') {
+			eq = eq.slice(1)
+		}
 		return eq;
 	}
-	fixDecimal(eq: string) : string {
+	fixDecimal(eq: (string | object)) : string {
+		if (typeof(eq) == 'object') {
+			eq.im = this.truncateDecimal((eq.im).toFixed(13));
+			eq.re = this.truncateDecimal((eq.re).toFixed(13));
+			console.log(eq);
+			return eq;
+		}
+		eq = eq.toString()
 		if (eq.includes('e')) {
 			let firstHalf: any = eq.split('e')[0];
 			let secondHalf: string = eq.split('e')[1];
-			firstHalf = parseFloat(firstHalf).toFixed(12);
+			firstHalf = parseFloat(firstHalf).toFixed(13);
 			firstHalf = this.truncateDecimal(firstHalf);
 			return `${firstHalf}E${secondHalf}`
 		} else {
@@ -195,11 +190,12 @@ export default class Misc {
 			return eq;
 		}
 	}
-	truncateDecimal(eq: string) : string {
+	truncateDecimal(eq: (string | number)) : number {
+		eq = eq.toString();
 		while (eq.slice(-1) == '.' ||
-		eq.slice(-1) == '0') {
+		(eq.slice(-1) == '0' && eq.includes('.'))) {
 			eq = eq.slice(0, -1);
 		}
-		return eq;
+		return parseFloat(eq);
 	}
 }
