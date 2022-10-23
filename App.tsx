@@ -3,6 +3,7 @@ import {
 	StyleSheet,
 	Text,
 	View,
+	TextInput, 
 	TouchableOpacity,
 	Platform,
 	Dimensions,
@@ -247,21 +248,21 @@ export default class App extends Component {
 		}
 	}
 	equals(eq: string) : void {
+		console.log('value ' + eq)
+		console.log('answer ', + this.state.answer)
+		eq.replace(/'/g, '')
 		while (eq.split('(').length > eq.split(')').length) {
 			eq += ')';
 		}
 		if (eq == '') return;
 		else {
 			try {
-				if (this.state.answer == '') {
-						this.setState({current: (eval(misc.change(eq))).toString()});
-				} else {
-					this.setState({current: this.state.answer});
-					this.setState({answer: ''});
-					this.ans(this.state.answer);
-				}
+				let x = math.evaluate(eq);
+				this.setState({current: comNums(x)});
+				this.setState({answer: ''});
+				this.ans(this.state.answer);
 			} catch(err) {
-				//alert(err.message)
+				console.log(err.message)
 				this.setState({current: 'Syntax Error'});
 				this.setState({answer: ''});
 			}
@@ -281,10 +282,14 @@ export default class App extends Component {
 			start={[0.0, 0.5]} end={[1.0, 0.5]}>
 			<View style={styles.container}>
     		<StatusBar backgroundColor={'transparent'} translucent/>
-    		<ScrollView style={{ flexGrow: this.state.scrollValue}}>
+    		<ScrollView style={{ flexGrow: this.state.scrollValue}} horizontal>
     		<View style={styles.screen}>
     			<Text style={styles.answer}>{this.state.answer}</Text>
-				<Text style={styles.current}>{this.state.current}</Text>
+				<TextInput 
+					style={styles.current}
+					value={this.state.current}
+					showSoftInputOnFocus={false}
+				/>
     		</View>
     		</ScrollView>
     		<View style={styles.row}>
