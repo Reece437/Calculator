@@ -1,1 +1,1 @@
-# Scientific calculator aimed to have large functionality
+# Scientific calculator that inlcudes both basic and advanced functions, such as hyperbolic trig functions, factorial of decimals, complex numbers etc. Interface is designed to be user friendly, with things such as apostrophes between each thousand. 
